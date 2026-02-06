@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aox.system.mapper.UserRoleMapper">
+
+    <!-- 根据用户ID查询角色列表 -->
+    <select id="selectRolesByUserId" resultType="com.aox.system.domain.SysRole">
+        SELECT r.*
+        FROM sys_role r
+        INNER JOIN sys_user_role ur ON r.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          AND r.deleted = 0
+          AND r.status = 0
+        ORDER BY r.role_sort ASC
+    </select>
+
+    <!-- 根据用户ID查询菜单列表（通过角色关联） -->
+    <select id="selectMenusByUserId" resultType="com.aox.system.domain.SysMenu">
+        SELECT DISTINCT m.*
+        FROM sys_menu m
+        INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id
+        INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          AND m.deleted = 0
+        ORDER BY m.sort_order ASC
+    </select>
+
+</mapper>

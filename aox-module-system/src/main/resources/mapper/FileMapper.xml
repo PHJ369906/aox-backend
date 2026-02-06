@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aox.system.mapper.FileMapper">
+
+    <!-- 根据MD5查询文件 -->
+    <select id="selectByMd5" resultType="com.aox.system.domain.SysFile">
+        SELECT *
+        FROM sys_file
+        WHERE md5 = #{md5}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <!-- 统计用户上传文件总大小 -->
+    <select id="sumFileSizeByUserId" resultType="java.lang.Long">
+        SELECT COALESCE(SUM(file_size), 0)
+        FROM sys_file
+        WHERE upload_user_id = #{userId}
+          AND deleted = 0
+    </select>
+
+    <!-- 统计租户文件总大小 -->
+    <select id="sumFileSizeByTenantId" resultType="java.lang.Long">
+        SELECT COALESCE(SUM(file_size), 0)
+        FROM sys_file
+        WHERE tenant_id = #{tenantId}
+          AND deleted = 0
+    </select>
+
+</mapper>

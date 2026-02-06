@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aox.infrastructure.payment.mapper.PaymentOrderMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.aox.infrastructure.payment.domain.PaymentOrder">
+        <id property="orderId" column="order_id"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="paymentNo" column="payment_no"/>
+        <result property="paymentType" column="payment_type"/>
+        <result property="paymentMethod" column="payment_method"/>
+        <result property="amount" column="amount"/>
+        <result property="currency" column="currency"/>
+        <result property="subject" column="subject"/>
+        <result property="body" column="body"/>
+        <result property="status" column="status"/>
+        <result property="userId" column="user_id"/>
+        <result property="payTime" column="pay_time"/>
+        <result property="transactionId" column="transaction_id"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 根据订单号查询订单 -->
+    <select id="selectByOrderNo" resultMap="BaseResultMap">
+        SELECT *
+        FROM sys_payment_order
+        WHERE order_no = #{orderNo}
+        LIMIT 1
+    </select>
+
+    <!-- 根据第三方交易号查询订单 -->
+    <select id="selectByTransactionId" resultMap="BaseResultMap">
+        SELECT *
+        FROM sys_payment_order
+        WHERE transaction_id = #{transactionId}
+        LIMIT 1
+    </select>
+
+    <!-- 更新订单状态 -->
+    <update id="updateStatus">
+        UPDATE sys_payment_order
+        SET status = #{status},
+            update_time = NOW()
+        WHERE order_id = #{orderId}
+    </update>
+
+</mapper>

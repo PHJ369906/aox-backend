@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aox.system.mapper.ConfigMapper">
+
+    <!-- 根据配置键获取配置值 -->
+    <select id="getConfigValue" resultType="java.lang.String">
+        SELECT config_value
+        FROM sys_config
+        WHERE config_key = #{configKey}
+          AND status = 0
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <!-- 根据配置键和租户ID获取配置值 -->
+    <select id="getConfigValueByTenant" resultType="java.lang.String">
+        SELECT config_value
+        FROM sys_config
+        WHERE config_key = #{configKey}
+          AND tenant_id = #{tenantId}
+          AND status = 0
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <!-- 更新配置值 -->
+    <update id="updateConfigValue">
+        UPDATE sys_config
+        SET config_value = #{configValue},
+            update_time = NOW()
+        WHERE config_key = #{configKey}
+          AND deleted = 0
+    </update>
+
+</mapper>

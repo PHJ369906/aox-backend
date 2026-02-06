@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aox.system.mapper.UserPostMapper">
+
+    <!-- 根据用户ID查询岗位列表 -->
+    <select id="selectPostsByUserId" resultType="com.aox.system.domain.SysPost">
+        SELECT p.*
+        FROM sys_post p
+        INNER JOIN sys_user_post up ON p.post_id = up.post_id
+        WHERE up.user_id = #{userId}
+          AND p.deleted = 0
+          AND p.status = 0
+        ORDER BY p.post_sort ASC
+    </select>
+
+</mapper>

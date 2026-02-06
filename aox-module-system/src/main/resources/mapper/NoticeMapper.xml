@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aox.system.mapper.NoticeMapper">
+
+    <!-- 获取用户未读公告列表 -->
+    <select id="getUnreadNoticesByUserId" resultType="com.aox.system.domain.SysNotice">
+        SELECT n.*
+        FROM sys_notice n
+        WHERE n.status = 1
+          AND n.deleted = 0
+          AND n.notice_id NOT IN (
+              SELECT nr.notice_id
+              FROM sys_notice_read nr
+              WHERE nr.user_id = #{userId}
+          )
+          AND (
+              n.target_type = 0
+              OR (
+                  n.target_type = 1
+                  AND EXISTS (
+                      SELECT 1 FROM sys_notice_target nt
+                      WHERE nt.notice_id = n.notice_id
+                        AND nt.target_type = 1
+                        AND nt.target_id = #{userId}
+                  )
+              )
+              OR (
+                  n.target_type = 2
+                  AND EXISTS (
+                      SELECT 1 FROM sys_notice_target nt
+                      WHERE nt.notice_id = n.notice_id
+                        AND nt.target_type = 2
+                        AND nt.target_id IN (
+                            SELECT ur.role_id
+                            FROM sys_user_role ur
+                            WHERE ur.user_id = #{userId}
+                        )
+                  )
+              )
+              OR (
+                  n.target_type = 3
+                  AND EXISTS (
+                      SELECT 1 FROM sys_notice_target nt
+                      WHERE nt.notice_id = n.notice_id
+                        AND nt.target_type = 3
+                        AND nt.target_id = (
+                            SELECT u.dept_id
+                            FROM sys_user u
+                            WHERE u.user_id = #{userId}
+                        )
+                  )
+              )
+          )
+        ORDER BY n.is_top DESC, n.top_order DESC, n.publish_time DESC
+    </select>
+
+    <!-- 增加阅读次数 -->
+    <update id="increaseReadCount">
+        UPDATE sys_notice
+        SET read_count = IFNULL(read_count, 0) + 1
+        WHERE notice_id = #{noticeId}
+    </update>
+
+</mapper>
