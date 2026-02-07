@@ -59,8 +59,4 @@ public class Banner extends BaseEntity {
      */
     private Integer status;
 
-    /**
-     * 创建人
-     */
-    private Long createdBy;
 }

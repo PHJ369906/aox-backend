@@ -1,7 +1,9 @@
 package com.aox.miniapp.service;
 
 import cn.hutool.crypto.digest.BCrypt;
+import com.aox.common.core.constant.Constants;
 import com.aox.common.exception.BusinessException;
+import com.aox.common.redis.service.RedisService;
 import com.aox.common.security.utils.JwtTokenUtil;
 import com.aox.infrastructure.sms.service.SmsService;
 import com.aox.miniapp.domain.dto.PasswordLoginDTO;
@@ -29,6 +31,7 @@ public class MiniappAuthService {
     private final SysUserMapper userMapper;
     private final SmsService smsService;
     private final JwtTokenUtil jwtTokenUtil;
+    private final RedisService redisService;
 
     /**
      * 账号密码登录
@@ -60,6 +63,7 @@ public class MiniappAuthService {
 
         // 4. 生成 Token
         String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "miniapp");
+        cacheLoginToken(token, user.getUserId());
 
         log.info("账号密码登录成功: userId={}, username={}", user.getUserId(), user.getUsername());
 
@@ -98,6 +102,7 @@ public class MiniappAuthService {
 
         // 5. 生成 Token
         String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "miniapp");
+        cacheLoginToken(token, user.getUserId());
 
         log.info("短信验证码登录成功: userId={}, phone={}", user.getUserId(), dto.getPhone());
 
@@ -136,6 +141,7 @@ public class MiniappAuthService {
 
         // 4. 生成 Token
         String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "miniapp");
+        cacheLoginToken(token, user.getUserId());
 
         log.info("微信授权登录成功: userId={}, openid={}", user.getUserId(), openid);
 
@@ -207,5 +213,13 @@ public class MiniappAuthService {
                         .phone(user.getPhone())
                         .build())
                 .build();
+    }
+
+    /**
+     * 缓存登录 Token（供 JWT 过滤器鉴权）
+     */
+    private void cacheLoginToken(String token, Long userId) {
+        String tokenKey = Constants.LOGIN_TOKEN_KEY + token;
+        redisService.set(tokenKey, userId, Constants.TOKEN_EXPIRATION);
     }
 }

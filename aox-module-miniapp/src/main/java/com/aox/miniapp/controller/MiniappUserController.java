@@ -2,6 +2,7 @@ package com.aox.miniapp.controller;
 
 import com.aox.common.core.domain.R;
 import com.aox.common.security.context.SecurityContextHolder;
+import com.aox.miniapp.domain.dto.BindPhoneDTO;
 import com.aox.miniapp.domain.dto.UpdateUserInfoDTO;
 import com.aox.miniapp.domain.vo.UserInfoVO;
 import com.aox.miniapp.service.MiniappUserService;
@@ -44,9 +45,9 @@ public class MiniappUserController {
 
     @Operation(summary = "绑定手机号", description = "绑定或更换手机号")
     @PostMapping("/bind-phone")
-    public R<Void> bindPhone(@RequestBody String phone, @RequestBody String code) {
+    public R<Void> bindPhone(@Valid @RequestBody BindPhoneDTO dto) {
         Long userId = SecurityContextHolder.getUserId();
-        userService.bindPhone(userId, phone, code);
+        userService.bindPhone(userId, dto.getPhone(), dto.getCode());
         return R.ok();
     }
 }

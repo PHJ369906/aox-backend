@@ -2,6 +2,7 @@ package com.aox.miniapp.controller;
 
 import com.aox.common.core.domain.R;
 import com.aox.miniapp.domain.dto.PasswordLoginDTO;
+import com.aox.miniapp.domain.dto.SendSmsCodeDTO;
 import com.aox.miniapp.domain.dto.SmsLoginDTO;
 import com.aox.miniapp.domain.dto.WxLoginDTO;
 import com.aox.miniapp.domain.vo.LoginVO;
@@ -50,8 +51,8 @@ public class MiniappAuthController {
 
     @Operation(summary = "发送短信验证码", description = "发送登录/注册验证码")
     @PostMapping("/sms/send")
-    public R<Void> sendSmsCode(@RequestBody String phone) {
-        authService.sendSmsCode(phone);
+    public R<Void> sendSmsCode(@Valid @RequestBody SendSmsCodeDTO dto) {
+        authService.sendSmsCode(dto.getPhone());
         return R.ok();
     }
 }
