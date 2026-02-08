@@ -63,7 +63,8 @@ public class MiniappAuthService {
         }
 
         // 4. 生成 Token
-        String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "miniapp");
+        Long tenantId = user.getTenantId() == null ? 0L : user.getTenantId();
+        String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "miniapp", tenantId);
         cacheLoginToken(token, user.getUserId());
 
         log.info("账号密码登录成功: userId={}, username={}", user.getUserId(), user.getUsername());
@@ -102,7 +103,8 @@ public class MiniappAuthService {
         }
 
         // 5. 生成 Token
-        String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "miniapp");
+        Long tenantId = user.getTenantId() == null ? 0L : user.getTenantId();
+        String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "miniapp", tenantId);
         cacheLoginToken(token, user.getUserId());
 
         log.info("短信验证码登录成功: userId={}, phone={}", user.getUserId(), dto.getPhone());
@@ -114,39 +116,8 @@ public class MiniappAuthService {
      * 微信授权登录
      */
     public LoginVO wechatLogin(WxLoginDTO dto) {
-        log.info("小程序微信授权登录: code={}", dto.getCode());
-
-        // 1. 调用微信接口获取 openid 和 session_key
-        // 注意：需要配置小程序的 appId 和 appSecret
-        // WxLoginResult wxResult = getWxOpenid(dto.getCode());
-        // String openid = wxResult.getOpenid();
-
-        // 开发模式：模拟 openid
-        String openid = "mock_openid_" + System.currentTimeMillis();
-        log.warn("【开发模式】使用模拟 openid: {}", openid);
-
-        // 2. 根据 openid 查询用户
-        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
-        // 假设在 SysUser 表中有 openid 字段
-        // wrapper.eq(SysUser::getOpenid, openid);
-        wrapper.eq(SysUser::getDeleted, 0);
-        wrapper.last("LIMIT 1");
-
-        SysUser user = userMapper.selectOne(wrapper);
-
-        // 3. 如果用户不存在，自动注册
-        if (user == null) {
-            user = registerByWechat(openid, dto.getUserInfo());
-            log.info("微信用户自动注册: userId={}, openid={}", user.getUserId(), openid);
-        }
-
-        // 4. 生成 Token
-        String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "miniapp");
-        cacheLoginToken(token, user.getUserId());
-
-        log.info("微信授权登录成功: userId={}, openid={}", user.getUserId(), openid);
-
-        return buildLoginVO(user, token);
+        log.warn("微信授权登录暂未接入真实 openid 解析，拒绝本次请求: code={}", dto.getCode());
+        throw new BusinessException("微信登录暂不可用，请使用短信或密码登录");
     }
 
     /**
@@ -180,6 +151,7 @@ public class MiniappAuthService {
         user.setPassword(passwordEncoder.encode("123456")); // 默认密码
         user.setStatus(0);
         user.setDeleted(0);
+        user.setTenantId(0L);
 
         userMapper.insert(user);
         return user;
@@ -195,6 +167,7 @@ public class MiniappAuthService {
         user.setPassword(passwordEncoder.encode("123456")); // 默认密码
         user.setStatus(0);
         user.setDeleted(0);
+        user.setTenantId(0L);
         // user.setOpenid(openid);
 
         userMapper.insert(user);

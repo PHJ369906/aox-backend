@@ -83,6 +83,7 @@ public class PermissionServiceImpl implements PermissionService {
         }
 
         log.info("为用户 {} 分配角色成功，角色数量: {}", userId, roleIds != null ? roleIds.size() : 0);
+        clearUserPermissionCache(userId);
     }
 
     @Override
@@ -115,6 +116,10 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void assignMenusToRole(Long roleId, List<Long> menuIds) {
+        List<Long> affectedUserIds = userRoleMapper.selectList(
+                new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, roleId)
+        ).stream().map(SysUserRole::getUserId).distinct().collect(Collectors.toList());
+
         // 删除角色现有的菜单权限
         LambdaQueryWrapper<SysRoleMenu> deleteWrapper = new LambdaQueryWrapper<>();
         deleteWrapper.eq(SysRoleMenu::getRoleId, roleId);
@@ -131,6 +136,7 @@ public class PermissionServiceImpl implements PermissionService {
         }
 
         log.info("为角色 {} 分配菜单权限成功，菜单数量: {}", roleId, menuIds != null ? menuIds.size() : 0);
+        affectedUserIds.forEach(this::clearUserPermissionCache);
     }
 
     @Override

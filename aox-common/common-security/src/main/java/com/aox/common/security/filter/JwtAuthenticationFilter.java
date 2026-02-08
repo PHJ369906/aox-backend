@@ -5,26 +5,20 @@ import com.aox.common.core.constant.RedisConstants;
 import com.aox.common.security.context.SecurityContextHolder;
 import com.aox.common.security.domain.LoginUser;
 import com.aox.common.security.utils.JwtTokenUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -38,14 +32,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenUtil jwtTokenUtil;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper objectMapper;
 
     public JwtAuthenticationFilter(JwtTokenUtil jwtTokenUtil,
-                                   RedisTemplate<String, Object> redisTemplate,
-                                   ObjectMapper objectMapper) {
+                                   RedisTemplate<String, Object> redisTemplate) {
         this.jwtTokenUtil = jwtTokenUtil;
         this.redisTemplate = redisTemplate;
-        this.objectMapper = objectMapper;
     }
 
     private static final String TOKEN_PREFIX = "Bearer ";
@@ -77,9 +68,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         Long userId = jwtTokenUtil.getUserIdFromToken(token);
                         String username = jwtTokenUtil.getUsernameFromToken(token);
                         String userType = jwtTokenUtil.getTypeFromToken(token);
+                        Long tenantId = jwtTokenUtil.getTenantIdFromToken(token);
+
+                        Long cachedUserIdLong = parseUserId(cachedUserId);
+                        if (cachedUserIdLong == null || !cachedUserIdLong.equals(userId)) {
+                            log.warn("Token与缓存用户ID不一致，忽略本次认证: tokenUserId={}, cachedUserId={}, uri={}",
+                                    userId, cachedUserId, requestUri);
+                            filterChain.doFilter(request, response);
+                            return;
+                        }
 
                         // 5. 构建 LoginUser 对象
-                        LoginUser loginUser = buildLoginUser(userId, username, userType, token);
+                        LoginUser loginUser = buildLoginUser(userId, username, userType, tenantId);
 
                         // 6. 设置到 SecurityContext
                         UsernamePasswordAuthenticationToken authentication =
@@ -119,7 +119,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 构建 LoginUser 对象
      * 注意：权限和角色将在阶段二由 PermissionService 加载
      */
-    private LoginUser buildLoginUser(Long userId, String username, String userType, String token) {
+    private LoginUser buildLoginUser(Long userId, String username, String userType, Long tenantId) {
         // 从 Redis 获取用户的权限和角色信息
         // 在阶段二完成后，这里将调用 PermissionService 获取真实的权限数据
         Set<String> permissions = getUserPermissionsFromCache(userId);
@@ -129,10 +129,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .userId(userId)
                 .username(username)
                 .userType(userType)
+                .tenantId(tenantId == null ? 0L : tenantId)
                 .permissions(permissions)
                 .roles(roles)
                 .loginTime(System.currentTimeMillis())
                 .build();
+    }
+
+    /**
+     * 将缓存中的 userId 转为 Long
+     */
+    private Long parseUserId(Object cachedUserId) {
+        if (cachedUserId instanceof Number number) {
+            return number.longValue();
+        }
+        if (cachedUserId instanceof String value) {
+            try {
+                return Long.parseLong(value);
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+        return null;
     }
 
     /**

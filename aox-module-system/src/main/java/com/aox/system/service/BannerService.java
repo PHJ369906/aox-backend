@@ -1,6 +1,7 @@
 package com.aox.system.service;
 
 import com.aox.common.exception.BusinessException;
+import com.aox.common.security.context.SecurityContextHolder;
 import com.aox.system.domain.Banner;
 import com.aox.system.domain.dto.BannerDTO;
 import com.aox.system.mapper.BannerMapper;
@@ -75,7 +76,7 @@ public class BannerService {
         banner.setLinkType(dto.getLinkType());
         banner.setSortOrder(dto.getSortOrder());
         banner.setStatus(dto.getStatus());
-        banner.setTenantId(0L); // TODO: 从上下文获取租户ID
+        banner.setTenantId(SecurityContextHolder.getTenantId() == null ? 0L : SecurityContextHolder.getTenantId());
 
         int result = bannerMapper.insert(banner);
         if (result <= 0) {

@@ -45,10 +45,24 @@ public class JwtTokenUtil {
      * @return Token
      */
     public String generateToken(Long userId, String username, String type) {
+        return generateToken(userId, username, type, 0L);
+    }
+
+    /**
+     * 生成 Token（包含租户ID）
+     *
+     * @param userId   用户ID
+     * @param username 用户名
+     * @param type     类型 (admin/miniapp)
+     * @param tenantId 租户ID
+     * @return Token
+     */
+    public String generateToken(Long userId, String username, String type, Long tenantId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("username", username);
         claims.put("type", type);
+        claims.put("tenantId", tenantId == null ? 0L : tenantId);
         return createToken(claims);
     }
 
@@ -89,6 +103,14 @@ public class JwtTokenUtil {
     public String getTypeFromToken(String token) {
         Claims claims = getClaimsFromToken(token);
         return claims != null ? (String) claims.get("type") : null;
+    }
+
+    /**
+     * 从 Token 中获取租户ID
+     */
+    public Long getTenantIdFromToken(String token) {
+        Claims claims = getClaimsFromToken(token);
+        return claims != null ? ((Number) claims.getOrDefault("tenantId", 0L)).longValue() : 0L;
     }
 
     /**

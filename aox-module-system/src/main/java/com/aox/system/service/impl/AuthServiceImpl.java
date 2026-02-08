@@ -72,7 +72,8 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 4. 生成 Token
-            String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "admin");
+            Long tenantId = user.getTenantId() == null ? 0L : user.getTenantId();
+            String token = jwtTokenUtil.generateToken(user.getUserId(), user.getUsername(), "admin", tenantId);
 
             // 5. 缓存 Token
             String tokenKey = Constants.LOGIN_TOKEN_KEY + token;

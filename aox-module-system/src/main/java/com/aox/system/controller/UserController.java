@@ -3,6 +3,7 @@ package com.aox.system.controller;
 import com.aox.common.core.domain.PageResult;
 import com.aox.common.core.domain.R;
 import com.aox.common.log.annotation.Log;
+import com.aox.common.security.annotation.RequirePermission;
 import com.aox.system.domain.request.UserCreateRequest;
 import com.aox.system.domain.request.UserQueryRequest;
 import com.aox.system.domain.request.UserUpdateRequest;
@@ -33,6 +34,7 @@ public class UserController {
     @GetMapping
     @Operation(summary = "分页查询用户列表")
     @Log(module = "用户管理", operation = "查询用户列表", saveResponseData = false)
+    @RequirePermission("system:user:list")
     public R<PageResult<UserVO>> list(UserQueryRequest request) {
         PageResult<UserVO> pageResult = userService.listUsers(request);
         return R.ok(pageResult);
@@ -43,6 +45,7 @@ public class UserController {
      */
     @GetMapping("/{userId}")
     @Operation(summary = "根据ID查询用户")
+    @RequirePermission("system:user:list")
     public R<UserVO> getById(@PathVariable Long userId) {
         UserVO vo = userService.getUserById(userId);
         return R.ok(vo);
@@ -54,6 +57,7 @@ public class UserController {
     @PostMapping
     @Operation(summary = "新增用户")
     @Log(module = "用户管理", operation = "新增用户")
+    @RequirePermission("system:user:add")
     public R<Void> add(@Valid @RequestBody UserCreateRequest request) {
         userService.createUser(request);
         return R.ok();
@@ -65,6 +69,7 @@ public class UserController {
     @PutMapping("/{userId}")
     @Operation(summary = "更新用户")
     @Log(module = "用户管理", operation = "更新用户")
+    @RequirePermission("system:user:edit")
     public R<Void> update(@PathVariable Long userId, @Valid @RequestBody UserUpdateRequest request) {
         userService.updateUser(userId, request);
         return R.ok();
@@ -76,6 +81,7 @@ public class UserController {
     @DeleteMapping("/{userId}")
     @Operation(summary = "删除用户")
     @Log(module = "用户管理", operation = "删除用户")
+    @RequirePermission("system:user:delete")
     public R<Void> delete(@PathVariable Long userId) {
         userService.deleteUser(userId);
         return R.ok();
@@ -87,6 +93,7 @@ public class UserController {
     @PutMapping("/{userId}/status")
     @Operation(summary = "更新用户状态")
     @Log(module = "用户管理", operation = "更新用户状态")
+    @RequirePermission("system:user:edit")
     public R<Void> updateStatus(@PathVariable Long userId, @RequestParam Integer status) {
         userService.updateUserStatus(userId, status);
         return R.ok();
@@ -98,6 +105,7 @@ public class UserController {
     @PostMapping("/{userId}/reset-password")
     @Operation(summary = "重置密码")
     @Log(module = "用户管理", operation = "重置密码")
+    @RequirePermission("system:user:edit")
     public R<Void> resetPassword(@PathVariable Long userId, @RequestParam String newPassword) {
         userService.resetPassword(userId, newPassword);
         return R.ok();
