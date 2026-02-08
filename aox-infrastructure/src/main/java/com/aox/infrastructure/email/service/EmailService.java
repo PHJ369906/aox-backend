@@ -70,7 +70,7 @@ public class EmailService {
 
         } catch (Exception e) {
             log.error("HTML邮件发送失败", e);
-            throw new RuntimeException("邮件发送失败: " + e.getMessage());
+            throw new BusinessException("邮件发送失败: " + e.getMessage());
         }
     }
 }

@@ -6,21 +6,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.nio.file.AccessDeniedException;
+
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * 全局异常处理器
  *
  * @author Aox Team
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
      * 业务异常
@@ -60,6 +61,15 @@ public class GlobalExceptionHandler {
         FieldError fieldError = e.getBindingResult().getFieldError();
         String message = fieldError != null ? fieldError.getDefaultMessage() : "参数校验失败";
         return R.fail(ErrorCode.BAD_REQUEST.getCode(), message);
+    }
+
+    /**
+     * 缺少请求参数异常
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public R<?> handleMissingServletRequestParameterException(MissingServletRequestParameterException e, HttpServletRequest request) {
+        log.error("缺少请求参数: URI={}, 参数名={}", request.getRequestURI(), e.getParameterName());
+        return R.fail(ErrorCode.BAD_REQUEST.getCode(), "缺少必要参数: " + e.getParameterName());
     }
 
     /**

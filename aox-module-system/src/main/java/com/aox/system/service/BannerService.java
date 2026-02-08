@@ -1,5 +1,6 @@
 package com.aox.system.service;
 
+import com.aox.common.exception.BusinessException;
 import com.aox.system.domain.Banner;
 import com.aox.system.domain.dto.BannerDTO;
 import com.aox.system.mapper.BannerMapper;
@@ -54,7 +55,7 @@ public class BannerService {
 
         Banner banner = bannerMapper.selectById(id);
         if (banner == null) {
-            throw new RuntimeException("Banner不存在");
+            throw new BusinessException("Banner不存在");
         }
 
         return banner;
@@ -78,7 +79,7 @@ public class BannerService {
 
         int result = bannerMapper.insert(banner);
         if (result <= 0) {
-            throw new RuntimeException("创建Banner失败");
+            throw new BusinessException("创建Banner失败");
         }
 
         log.info("Banner创建成功: id={}", banner.getId());
@@ -93,7 +94,7 @@ public class BannerService {
 
         Banner banner = bannerMapper.selectById(id);
         if (banner == null) {
-            throw new RuntimeException("Banner不存在");
+            throw new BusinessException("Banner不存在");
         }
 
         banner.setTitle(dto.getTitle());
@@ -105,7 +106,7 @@ public class BannerService {
 
         int result = bannerMapper.updateById(banner);
         if (result <= 0) {
-            throw new RuntimeException("更新Banner失败");
+            throw new BusinessException("更新Banner失败");
         }
 
         log.info("Banner更新成功: id={}", id);
@@ -120,12 +121,12 @@ public class BannerService {
 
         Banner banner = bannerMapper.selectById(id);
         if (banner == null) {
-            throw new RuntimeException("Banner不存在");
+            throw new BusinessException("Banner不存在");
         }
 
         int result = bannerMapper.deleteById(id);
         if (result <= 0) {
-            throw new RuntimeException("删除Banner失败");
+            throw new BusinessException("删除Banner失败");
         }
 
         log.info("Banner删除成功: id={}", id);
@@ -140,18 +141,18 @@ public class BannerService {
 
         // 验证状态值
         if (status != 0 && status != 1) {
-            throw new RuntimeException("状态参数错误");
+            throw new BusinessException("状态参数错误");
         }
 
         Banner banner = bannerMapper.selectById(id);
         if (banner == null) {
-            throw new RuntimeException("Banner不存在");
+            throw new BusinessException("Banner不存在");
         }
 
         banner.setStatus(status);
         int result = bannerMapper.updateById(banner);
         if (result <= 0) {
-            throw new RuntimeException("更新状态失败");
+            throw new BusinessException("更新状态失败");
         }
 
         log.info("Banner状态更新成功: id={}, status={}", id, status);
@@ -165,7 +166,7 @@ public class BannerService {
         log.info("批量更新排序: count={}", banners.size());
 
         if (banners == null || banners.isEmpty()) {
-            throw new RuntimeException("排序列表不能为空");
+            throw new BusinessException("排序列表不能为空");
         }
 
         int result = bannerMapper.batchUpdateSort(banners);

@@ -4,14 +4,16 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.aox.common.log.annotation.Log;
 import com.aox.common.log.service.AsyncLogService;
+import com.aox.common.security.domain.LoginUser;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -23,11 +25,10 @@ import java.lang.reflect.Method;
  *
  * @author Aox Team
  */
+@Slf4j
 @Aspect
 @Component
 public class LogAspect {
-
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LogAspect.class);
 
     private final AsyncLogService asyncLogService;
 
@@ -122,12 +123,10 @@ public class LogAspect {
             String username = null;
             try {
                 // 尝试从 SecurityContextHolder 获取用户信息
-                Object principal = org.springframework.security.core.context.SecurityContextHolder
-                        .getContext().getAuthentication();
-                if (principal != null) {
-                    Object auth = org.springframework.security.core.context.SecurityContextHolder
-                            .getContext().getAuthentication().getPrincipal();
-                    if (auth instanceof com.aox.common.security.domain.LoginUser loginUser) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                if (authentication != null) {
+                    Object principal = authentication.getPrincipal();
+                    if (principal instanceof LoginUser loginUser) {
                         userId = loginUser.getUserId();
                         username = loginUser.getUsername();
                     }

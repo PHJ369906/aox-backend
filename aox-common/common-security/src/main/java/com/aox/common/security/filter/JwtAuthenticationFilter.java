@@ -1,6 +1,7 @@
 package com.aox.common.security.filter;
 
 import cn.hutool.core.util.StrUtil;
+import com.aox.common.core.constant.RedisConstants;
 import com.aox.common.security.context.SecurityContextHolder;
 import com.aox.common.security.domain.LoginUser;
 import com.aox.common.security.utils.JwtTokenUtil;
@@ -31,10 +32,9 @@ import java.util.Set;
  *
  * @author Aox Team
  */
+@Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtTokenUtil jwtTokenUtil;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -50,7 +50,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String TOKEN_PREFIX = "Bearer ";
     private static final String TOKEN_HEADER = "Authorization";
-    private static final String LOGIN_TOKEN_KEY = "login:token:";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -58,19 +57,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String requestUri = request.getRequestURI();
-        log.info("🔍 JWT过滤器处理请求: {} {}", request.getMethod(), requestUri);
+        log.debug("JWT过滤器处理请求: {} {}", request.getMethod(), requestUri);
 
         try {
             // 1. 获取 Token
             String token = getTokenFromRequest(request);
 
-            log.info("📝 请求URI: {}, Token是否存在: {}", requestUri, StrUtil.isNotBlank(token));
+            log.debug("请求URI: {}, Token是否存在: {}", requestUri, StrUtil.isNotBlank(token));
 
             if (StrUtil.isNotBlank(token)) {
                 // 2. 验证 Token
                 if (jwtTokenUtil.validateToken(token)) {
                     // 3. 检查 Token 是否在 Redis 中存在（用于支持登出功能）
-                    String tokenKey = LOGIN_TOKEN_KEY + token;
+                    String tokenKey = RedisConstants.LOGIN_TOKEN_KEY + token;
                     Object cachedUserId = redisTemplate.opsForValue().get(tokenKey);
 
                     if (cachedUserId != null) {
@@ -142,7 +141,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     @SuppressWarnings("unchecked")
     private Set<String> getUserPermissionsFromCache(Long userId) {
-        String permissionKey = "user:permissions:" + userId;
+        String permissionKey = RedisConstants.USER_PERMISSIONS_KEY + userId;
         Object cached = redisTemplate.opsForValue().get(permissionKey);
         if (cached instanceof List) {
             return new HashSet<>((List<String>) cached);
@@ -157,7 +156,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     @SuppressWarnings("unchecked")
     private Set<String> getUserRolesFromCache(Long userId) {
-        String roleKey = "user:roles:" + userId;
+        String roleKey = RedisConstants.USER_ROLES_KEY + userId;
         Object cached = redisTemplate.opsForValue().get(roleKey);
         if (cached instanceof List) {
             return new HashSet<>((List<String>) cached);

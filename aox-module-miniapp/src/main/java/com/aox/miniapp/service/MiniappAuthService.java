@@ -1,6 +1,5 @@
 package com.aox.miniapp.service;
 
-import cn.hutool.crypto.digest.BCrypt;
 import com.aox.common.core.constant.Constants;
 import com.aox.common.exception.BusinessException;
 import com.aox.common.redis.service.RedisService;
@@ -15,6 +14,7 @@ import com.aox.system.mapper.SysUserMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,6 +32,7 @@ public class MiniappAuthService {
     private final SmsService smsService;
     private final JwtTokenUtil jwtTokenUtil;
     private final RedisService redisService;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 账号密码登录
@@ -52,7 +53,7 @@ public class MiniappAuthService {
         }
 
         // 2. 验证密码
-        if (!BCrypt.checkpw(dto.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new BusinessException("密码错误");
         }
 
@@ -176,7 +177,7 @@ public class MiniappAuthService {
         user.setUsername("user_" + phone);
         user.setPhone(phone);
         user.setNickname("用户" + phone.substring(7));
-        user.setPassword(BCrypt.hashpw("123456", BCrypt.gensalt())); // 默认密码
+        user.setPassword(passwordEncoder.encode("123456")); // 默认密码
         user.setStatus(0);
         user.setDeleted(0);
 
@@ -191,7 +192,7 @@ public class MiniappAuthService {
         SysUser user = new SysUser();
         user.setUsername("wx_" + openid.substring(0, 10));
         user.setNickname("微信用户");
-        user.setPassword(BCrypt.hashpw("123456", BCrypt.gensalt())); // 默认密码
+        user.setPassword(passwordEncoder.encode("123456")); // 默认密码
         user.setStatus(0);
         user.setDeleted(0);
         // user.setOpenid(openid);

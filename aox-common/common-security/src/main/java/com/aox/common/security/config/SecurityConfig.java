@@ -4,6 +4,7 @@ import com.aox.common.security.filter.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -49,10 +50,10 @@ public class SecurityConfig {
      */
     private static final String[] WHITE_LIST = {
             // 认证相关
-            "/api/v1/auth/login",
-            "/api/v1/auth/register",
-            "/api/v1/auth/captcha",
+            "/api/auth/**",
+            "/api/v1/auth/**",
             // 小程序认证
+            "/api/miniapp/auth/**",
             "/api/v1/miniapp/auth/**",
             // Swagger/OpenAPI
             "/swagger-ui/**",
@@ -119,12 +120,20 @@ public class SecurityConfig {
     }
 
     /**
+     * CORS 允许的来源配置
+     * 默认允许所有来源，生产环境如需限制请配置具体域名
+     */
+    @Value("${security.cors.allowed-origins:*}")
+    private String allowedOrigins;
+
+    /**
      * CORS 配置
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        // 从配置读取允许的来源，支持多个域名用逗号分隔
+        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Disposition"));

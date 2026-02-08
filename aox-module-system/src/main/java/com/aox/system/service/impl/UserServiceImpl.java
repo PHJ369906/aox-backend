@@ -1,6 +1,5 @@
 package com.aox.system.service.impl;
 
-import cn.hutool.crypto.digest.BCrypt;
 import com.aox.common.core.domain.PageResult;
 import com.aox.common.core.utils.BeanConvertUtil;
 import com.aox.system.domain.SysUser;
@@ -16,6 +15,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +31,7 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
 
     private final SysUserMapper userMapper;
     private final SysUserRoleMapper userRoleMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public PageResult<UserVO> listUsers(UserQueryRequest request) {
@@ -70,8 +71,8 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
         // 创建用户实体
         SysUser user = new SysUser();
         user.setUsername(request.getUsername());
-        // BCrypt 加密密码
-        user.setPassword(BCrypt.hashpw(request.getPassword()));
+        // 密码加密
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setNickname(request.getNickname());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
@@ -139,8 +140,8 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
     public void resetPassword(Long userId, String newPassword) {
         SysUser user = new SysUser();
         user.setUserId(userId);
-        // BCrypt 加密新密码
-        user.setPassword(BCrypt.hashpw(newPassword));
+        // 密码加密
+        user.setPassword(passwordEncoder.encode(newPassword));
         userMapper.updateById(user);
     }
 }

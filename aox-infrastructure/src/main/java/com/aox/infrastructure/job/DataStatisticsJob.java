@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public class DataStatisticsJob {
             LocalDateTime endTime = LocalDateTime.now();
             log.info("================ 每日数据统计任务完成 ================");
             log.info("统计完成，耗时: {} 毫秒",
-                     java.time.Duration.between(startTime, endTime).toMillis());
+                     Duration.between(startTime, endTime).toMillis());
 
         } catch (Exception e) {
             log.error("每日数据统计失败", e);

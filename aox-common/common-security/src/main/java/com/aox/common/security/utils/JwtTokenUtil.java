@@ -19,12 +19,11 @@ import java.util.Map;
  *
  * @author Aox Team
  */
+@Slf4j
 @Component
 public class JwtTokenUtil {
 
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtTokenUtil.class);
-
-    @Value("${jwt.secret:aox-secret-key-must-be-at-least-256-bits-long-for-hs256}")
+    @Value("${jwt.secret}")
     private String secret;
 
     @Value("${jwt.expiration:7200}")

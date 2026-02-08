@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -54,7 +55,7 @@ public class DataCleanupJob {
             log.info("================ 清理过期数据任务完成 ================");
             log.info("总计清理: {} 条数据, 耗时: {} 毫秒",
                      totalCleaned,
-                     java.time.Duration.between(startTime, endTime).toMillis());
+                     Duration.between(startTime, endTime).toMillis());
 
         } catch (Exception e) {
             log.error("清理过期数据失败", e);

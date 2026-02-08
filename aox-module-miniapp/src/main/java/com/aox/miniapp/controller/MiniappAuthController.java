@@ -1,6 +1,7 @@
 package com.aox.miniapp.controller;
 
 import com.aox.common.core.domain.R;
+import com.aox.common.redis.annotation.RateLimiter;
 import com.aox.miniapp.domain.dto.PasswordLoginDTO;
 import com.aox.miniapp.domain.dto.SendSmsCodeDTO;
 import com.aox.miniapp.domain.dto.SmsLoginDTO;
@@ -30,6 +31,7 @@ public class MiniappAuthController {
 
     @Operation(summary = "账号密码登录", description = "使用手机号/用户名+密码登录")
     @PostMapping("/login/password")
+    @RateLimiter(key = "miniapp:login:", time = 60, count = 5, limitType = RateLimiter.LimitType.IP, message = "登录请求过于频繁，请1分钟后再试")
     public R<LoginVO> passwordLogin(@Valid @RequestBody PasswordLoginDTO dto) {
         LoginVO result = authService.passwordLogin(dto);
         return R.ok(result);
@@ -37,6 +39,7 @@ public class MiniappAuthController {
 
     @Operation(summary = "短信验证码登录", description = "使用手机号+验证码登录")
     @PostMapping("/login/sms")
+    @RateLimiter(key = "miniapp:sms:login:", time = 60, count = 5, limitType = RateLimiter.LimitType.IP, message = "登录请求过于频繁，请1分钟后再试")
     public R<LoginVO> smsLogin(@Valid @RequestBody SmsLoginDTO dto) {
         LoginVO result = authService.smsLogin(dto);
         return R.ok(result);
@@ -51,6 +54,7 @@ public class MiniappAuthController {
 
     @Operation(summary = "发送短信验证码", description = "发送登录/注册验证码")
     @PostMapping("/sms/send")
+    @RateLimiter(key = "miniapp:sms:send:", time = 60, count = 3, limitType = RateLimiter.LimitType.IP, message = "验证码发送过于频繁，请1分钟后再试")
     public R<Void> sendSmsCode(@Valid @RequestBody SendSmsCodeDTO dto) {
         authService.sendSmsCode(dto.getPhone());
         return R.ok();

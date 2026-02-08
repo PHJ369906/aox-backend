@@ -1,6 +1,7 @@
 package com.aox.infrastructure.payment.service;
 
 import cn.hutool.core.util.StrUtil;
+import com.aox.common.exception.BusinessException;
 import com.aox.infrastructure.payment.domain.PaymentOrder;
 import com.aox.infrastructure.payment.domain.dto.PaymentOrderQueryDTO;
 import com.aox.infrastructure.payment.domain.vo.PaymentOrderExportVO;
@@ -102,7 +103,7 @@ public class AdminPaymentService {
 
         PaymentOrder order = paymentOrderMapper.selectById(orderId);
         if (order == null) {
-            throw new RuntimeException("订单不存在");
+            throw new BusinessException("订单不存在");
         }
 
         // 查询用户信息
@@ -322,7 +323,7 @@ public class AdminPaymentService {
                     .sheet("支付订单")
                     .doWrite(exportList);
         } catch (IOException e) {
-            throw new RuntimeException("导出失败", e);
+            throw new BusinessException("导出失败", e);
         }
     }
 

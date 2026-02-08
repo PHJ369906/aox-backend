@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aox.common.core.domain.R;
 import com.aox.common.core.enums.ErrorCode;
 import com.aox.common.log.annotation.Log;
+import com.aox.common.redis.annotation.RateLimiter;
 import com.aox.common.security.context.SecurityContextHolder;
 import com.aox.system.domain.request.LoginRequest;
 import com.aox.system.domain.vo.LoginResponse;
@@ -35,6 +36,7 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "用户登录", description = "用户名密码登录")
     @Log(module = "认证管理", operation = "用户登录")
+    @RateLimiter(key = "login:", time = 60, count = 5, limitType = RateLimiter.LimitType.IP, message = "登录请求过于频繁，请1分钟后再试")
     public R<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         String ip = getIpAddress(httpRequest);
         LoginResponse response = authService.login(request, ip);

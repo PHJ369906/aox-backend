@@ -2,6 +2,7 @@ package com.aox.miniapp.service;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aox.common.exception.BusinessException;
 import com.aox.miniapp.domain.dto.MiniappUserQueryDTO;
 import com.aox.miniapp.domain.vo.MiniappUserVO;
 import com.aox.miniapp.domain.vo.UserStatisticsVO;
@@ -94,7 +95,7 @@ public class AdminMiniappUserService {
 
         SysUser user = userMapper.selectById(userId);
         if (user == null || user.getDeleted() == 1) {
-            throw new RuntimeException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
 
         return convertToVO(user);
@@ -109,18 +110,18 @@ public class AdminMiniappUserService {
 
         // 验证状态值
         if (status != 0 && status != 1) {
-            throw new RuntimeException("状态参数错误");
+            throw new BusinessException("状态参数错误");
         }
 
         SysUser user = userMapper.selectById(userId);
         if (user == null || user.getDeleted() == 1) {
-            throw new RuntimeException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
 
         user.setStatus(status);
         int result = userMapper.updateById(user);
         if (result <= 0) {
-            throw new RuntimeException("更新用户状态失败");
+            throw new BusinessException("更新用户状态失败");
         }
 
         log.info("用户状态更新成功: userId={}, status={}", userId, status);

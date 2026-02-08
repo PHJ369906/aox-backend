@@ -5,6 +5,7 @@ import com.aox.admin.domain.vo.JobExecutionLogVO;
 import com.aox.admin.domain.vo.JobStatisticsVO;
 import com.aox.admin.domain.vo.ScheduledJobVO;
 import com.aox.admin.integration.xxl.XxlJobAdminClient;
+import com.aox.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -141,12 +142,12 @@ public class ScheduledJobService {
         log.info("手动触发任务: jobName={}", jobName);
 
         if (!xxlJobAdminClient.isEnabled()) {
-            throw new RuntimeException("XXL-Job未启用或未配置调度中心地址");
+            throw new BusinessException("XXL-Job未启用或未配置调度中心地址");
         }
 
         Integer jobId = resolveJobId(jobName);
         if (jobId == null) {
-            throw new RuntimeException("未找到对应任务: " + jobName);
+            throw new BusinessException("未找到对应任务: " + jobName);
         }
         xxlJobAdminClient.triggerJob(jobId);
     }

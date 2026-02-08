@@ -1,6 +1,5 @@
 package com.aox.system.service.impl;
 
-import cn.hutool.crypto.digest.BCrypt;
 import com.aox.common.core.constant.Constants;
 import com.aox.common.core.enums.ErrorCode;
 import com.aox.common.exception.BusinessException;
@@ -17,6 +16,7 @@ import com.aox.system.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final AsyncLogService asyncLogService;
     private final JwtTokenUtil jwtTokenUtil;
     private final RedisService redisService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public LoginResponse login(LoginRequest request, String ip, String userAgent) {
@@ -57,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 2. 校验密码
-            if (!BCrypt.checkpw(request.getPassword(), user.getPassword())) {
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                 // 保存登录失败日志
                 asyncLogService.saveLoginLog(username, 1, 1, ip, userAgent, "密码错误");
                 throw new BusinessException(ErrorCode.PASSWORD_ERROR);
